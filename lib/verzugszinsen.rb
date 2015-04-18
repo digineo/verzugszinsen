@@ -18,10 +18,12 @@ class Verzugszinsen
     @prozent           = prozent
     @days              = daterange.to_a
     @entries           = []
+    zinssaetze         = self.class.basiszinssatz.to_a
 
-    self.class.basiszinssatz.each do |start, basiszins|
+    zinssaetze.each_with_index do |(start, basiszins), i|
       # Zu berücksichtigende Tage
-      range = (start..((start >> 6) - 1)).to_a & @days
+      next_date = i < (zinssaetze.size-1) ? zinssaetze[i+1][0] : start >> 6
+      range     = (start..(next_date - 1)).to_a & @days
 
       # Anzahl der Tage im Zinszeitraum
       count = range.count
@@ -55,7 +57,7 @@ class Verzugszinsen
     out = []
     out << "Zeitraum                  | Tage | Zinssatz | Zinsertrag"
     out << "--------------------------------------------------------"
-    
+
     @entries.each do |entry|
       out << sprintf("%s bis %s | %04s |    %5.2f | %10.#{PRECISION}f", entry.begin, entry.end, entry.tage, entry.zinssatz, entry.zinsertrag)
     end
